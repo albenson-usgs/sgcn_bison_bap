@@ -1,5 +1,5 @@
-Data Wrangling and Analyses for the Biogeographic Characterization Branch
-===============================================================================================================
+Biogeographic Analysis Package Using Data From Species of Greatest Conservation Need and BISON
+===========================================================================================================
 
 -----------
 Contact:
@@ -10,7 +10,7 @@ Abby Benson (albenson@usgs.gov)
 -----------
 Purpose:
 -----------
-This repository contains code and documentation exploring analyses using Biogeographic Characterization Branch data and managing those data for broader uses.
+This repository contains code and documentation exploring analyses using data from the Species of Greatest Conservation Need (SGCN) National List and Biodiversity Information Serving Our Nation (BISON), the US Node to the Global Biodiversity Information Facility (GBIF). 
 
 ## Provisional Software Disclaimer Under USGS Software Release Policy, the software codes here are considered preliminary, not released officially, and posted to this repo for informal sharing among colleagues.
 
