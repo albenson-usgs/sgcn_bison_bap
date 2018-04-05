@@ -7,7 +7,7 @@ library(plyr)
 
 
 # Pulls the SGCN National List from MongoDB
-bis_sgcnsynthesis2 <- mongo(collection = "SGCN Synthesis", db = "bis", url = "mongodb://albenson:M4XDbXp7elp!@54.91.95.139/bis")
+bis_sgcnsynthesis2 <- mongo(collection = "xxxxxxxxxxxxx", db = "xxxxxxxxxxxxxxxxxx", url = "xxxxxxxxxxxxxxxxxxx")
 mongo_sgcn2 <- bis_sgcnsynthesis2$find('{}', fields = '{"_id":1, "Common Name":1, "Taxonomic Group":1, "Match Method":1, "Taxonomy":1, "TESS":1, "NatureServe":1, "Source Data Summary":1, "ITIS":1, "WoRMS":1}')
 
 
