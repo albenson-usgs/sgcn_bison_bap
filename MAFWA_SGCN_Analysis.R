@@ -7,14 +7,14 @@ library(plyr)
 
 
 # Pulls the SGCN National List from MongoDB
-bis_sgcnsynthesis2 <- mongo(collection = "xxxxxxxx", db = "xxxxxxxxxxxxxx", url = "xxxxxxxxxxxx")
+bis_sgcnsynthesis2 <- mongo(collection = "SGCN Synthesis", db = "bis", url = "mongodb://albenson:M4XDbXp7elp!@54.91.95.139/bis")
 mongo_sgcn2 <- bis_sgcnsynthesis2$find('{}', fields = '{"_id":1, "Common Name":1, "Taxonomic Group":1, "Match Method":1, "Taxonomy":1, "TESS":1, "NatureServe":1, "Source Data Summary":1, "ITIS":1, "WoRMS":1}')
 
 
 sgcn_natlist <- mongo_sgcn2
 sgcn_natlist$ScientificName <- sgcn_natlist$`_id`
 
-# Let's break this down into manageable chunks first starting with FWS WSFR Region 3. But in order to do that we need the state list.
+# Let's break this down into manageable chunks first starting with MAFWA. But in order to do that we need the state list.
 # This bit of code is extremely slow. Would be good to figure out how to speed this up. Takes hours to run.
 sgcn_natlist$statelist2015 <- NA
 sgcn_natlist$statelist2005 <- NA
@@ -35,99 +35,99 @@ for (i in 1:nrow(sgcn_natlist)){
 ### Subset the data to just the national lists species for a particular region
 toMatchMAWFA <- c("Illinois","Indiana","Iowa","Kansas","Kentucky","Michigan","Minnesota","Missouri","Nebraska","North Dakota","Ohio",
                   "South Dakota", "Wisconsin") 
-MAWFA_list <- sgcn_natlist[grep(paste(toMatchMAWFA,collapse = "|"),sgcn_natlist$statelist2015),]
+MAFWA_list <- sgcn_natlist[grep(paste(toMatchMAWFA,collapse = "|"),sgcn_natlist$statelist2015),]
 
 
 # Extract out the FWS listing status from the document structure coming back from Mongodb2.0
-MAWFA_list$ListingStatus <- NA
-MAWFA_list$ListingStatus2 <- NA
-MAWFA_list$ListingStatus3 <- NA
-MAWFA_list$ListingStatus4 <- NA
-for (i in 1:nrow (MAWFA_list)) {
-  if (!is.null(MAWFA_list[i,]$TESS$listingStatus[[1]])){
-    tessrow <- as.data.frame(MAWFA_list[i,]$TESS$listingStatus, simplifyDataFrame=T)
+MAFWA_list$ListingStatus <- NA
+MAFWA_list$ListingStatus2 <- NA
+MAFWA_list$ListingStatus3 <- NA
+MAFWA_list$ListingStatus4 <- NA
+for (i in 1:nrow (MAFWA_list)) {
+  if (!is.null(MAFWA_list[i,]$TESS$listingStatus[[1]])){
+    tessrow <- as.data.frame(MAFWA_list[i,]$TESS$listingStatus, simplifyDataFrame=T)
     if (nrow(tessrow) == 1) {
-      MAWFA_list[i,]$ListingStatus <- tessrow$STATUS[[1]]
+      MAFWA_list[i,]$ListingStatus <- tessrow$STATUS[[1]]
     }
     if (nrow(tessrow) == 2){
-    MAWFA_list[i,]$ListingStatus <- tessrow$STATUS[[1]] 
-    MAWFA_list[i,]$ListingStatus2 <- tessrow$STATUS[[2]]
+    MAFWA_list[i,]$ListingStatus <- tessrow$STATUS[[1]] 
+    MAFWA_list[i,]$ListingStatus2 <- tessrow$STATUS[[2]]
     }
     if (nrow(tessrow) == 3){
-      MAWFA_list[i,]$ListingStatus <- tessrow$STATUS[[1]] 
-      MAWFA_list[i,]$ListingStatus2 <- tessrow$STATUS[[2]]
-      MAWFA_list[i,]$ListingStatus3 <- tessrow$STATUS[[3]]
+      MAFWA_list[i,]$ListingStatus <- tessrow$STATUS[[1]] 
+      MAFWA_list[i,]$ListingStatus2 <- tessrow$STATUS[[2]]
+      MAFWA_list[i,]$ListingStatus3 <- tessrow$STATUS[[3]]
     }
     if (nrow(tessrow) == 4){
-      MAWFA_list[i,]$ListingStatus <- tessrow$STATUS[[1]] 
-      MAWFA_list[i,]$ListingStatus2 <- tessrow$STATUS[[2]]
-      MAWFA_list[i,]$ListingStatus3 <- tessrow$STATUS[[3]]
-      MAWFA_list[i,]$ListingStatus4 <- tessrow$STATUS[[4]]
+      MAFWA_list[i,]$ListingStatus <- tessrow$STATUS[[1]] 
+      MAFWA_list[i,]$ListingStatus2 <- tessrow$STATUS[[2]]
+      MAFWA_list[i,]$ListingStatus3 <- tessrow$STATUS[[3]]
+      MAFWA_list[i,]$ListingStatus4 <- tessrow$STATUS[[4]]
     }
   } else {
-    MAWFA_list[i,]$ListingStatus <- NA
+    MAFWA_list[i,]$ListingStatus <- NA
   }
 }
 
-MAWFA_list$TESS <- NULL
+MAFWA_list$TESS <- NULL
 
 # Swap higher priority listing status for lower priority ones
-for (i in 1:nrow(MAWFA_list)) {
-  if (!is.na(MAWFA_list[i,]$ListingStatus2) & MAWFA_list[i,]$ListingStatus2 == "Endangered") {
-    MAWFA_list[i,]$ListingStatus <- paste(MAWFA_list[i,]$ListingStatus,MAWFA_list[i,]$ListingStatus2, sep = "")
-    MAWFA_list[i,]$ListingStatus2 <- substr(MAWFA_list[i,]$ListingStatus,0,nchar(MAWFA_list[i,]$ListingStatus) - nchar(MAWFA_list[i,]$ListingStatus2))
-    MAWFA_list[i,]$ListingStatus <- substr(MAWFA_list[i,]$ListingStatus,nchar(MAWFA_list[i,]$ListingStatus2) + 1, nchar(MAWFA_list[i,]$ListingStatus))
+for (i in 1:nrow(MAFWA_list)) {
+  if (!is.na(MAFWA_list[i,]$ListingStatus2) & MAFWA_list[i,]$ListingStatus2 == "Endangered") {
+    MAFWA_list[i,]$ListingStatus <- paste(MAFWA_list[i,]$ListingStatus,MAFWA_list[i,]$ListingStatus2, sep = "")
+    MAFWA_list[i,]$ListingStatus2 <- substr(MAFWA_list[i,]$ListingStatus,0,nchar(MAFWA_list[i,]$ListingStatus) - nchar(MAFWA_list[i,]$ListingStatus2))
+    MAFWA_list[i,]$ListingStatus <- substr(MAFWA_list[i,]$ListingStatus,nchar(MAFWA_list[i,]$ListingStatus2) + 1, nchar(MAFWA_list[i,]$ListingStatus))
   }
 }
 
-for (i in 1:nrow(MAWFA_list)) {
-  if (!is.na(MAWFA_list[i,]$ListingStatus3) & MAWFA_list[i,]$ListingStatus3 == "Endangered") {
-    MAWFA_list[i,]$ListingStatus <- paste(MAWFA_list[i,]$ListingStatus,MAWFA_list[i,]$ListingStatus3, sep = "")
-    MAWFA_list[i,]$ListingStatus3 <- substr(MAWFA_list[i,]$ListingStatus,0,nchar(MAWFA_list[i,]$ListingStatus) - nchar(MAWFA_list[i,]$ListingStatus3))
-    MAWFA_list[i,]$ListingStatus <- substr(MAWFA_list[i,]$ListingStatus,nchar(MAWFA_list[i,]$ListingStatus3) + 1, nchar(MAWFA_list[i,]$ListingStatus))
+for (i in 1:nrow(MAFWA_list)) {
+  if (!is.na(MAFWA_list[i,]$ListingStatus3) & MAFWA_list[i,]$ListingStatus3 == "Endangered") {
+    MAFWA_list[i,]$ListingStatus <- paste(MAFWA_list[i,]$ListingStatus,MAFWA_list[i,]$ListingStatus3, sep = "")
+    MAFWA_list[i,]$ListingStatus3 <- substr(MAFWA_list[i,]$ListingStatus,0,nchar(MAFWA_list[i,]$ListingStatus) - nchar(MAFWA_list[i,]$ListingStatus3))
+    MAFWA_list[i,]$ListingStatus <- substr(MAFWA_list[i,]$ListingStatus,nchar(MAFWA_list[i,]$ListingStatus3) + 1, nchar(MAFWA_list[i,]$ListingStatus))
   }
 }
 
-for (i in 1:nrow(MAWFA_list)) {
-  if (!is.na(MAWFA_list[i,]$ListingStatus3) & MAWFA_list[i,]$ListingStatus3 == "Recovery") {
-    MAWFA_list[i,]$ListingStatus <- paste(MAWFA_list[i,]$ListingStatus,MAWFA_list[i,]$ListingStatus3, sep = "")
-    MAWFA_list[i,]$ListingStatus3 <- substr(MAWFA_list[i,]$ListingStatus,0,nchar(MAWFA_list[i,]$ListingStatus) - nchar(MAWFA_list[i,]$ListingStatus3))
-    MAWFA_list[i,]$ListingStatus <- substr(MAWFA_list[i,]$ListingStatus,nchar(MAWFA_list[i,]$ListingStatus3) + 1, nchar(MAWFA_list[i,]$ListingStatus))
+for (i in 1:nrow(MAFWA_list)) {
+  if (!is.na(MAFWA_list[i,]$ListingStatus3) & MAFWA_list[i,]$ListingStatus3 == "Recovery") {
+    MAFWA_list[i,]$ListingStatus <- paste(MAFWA_list[i,]$ListingStatus,MAFWA_list[i,]$ListingStatus3, sep = "")
+    MAFWA_list[i,]$ListingStatus3 <- substr(MAFWA_list[i,]$ListingStatus,0,nchar(MAFWA_list[i,]$ListingStatus) - nchar(MAFWA_list[i,]$ListingStatus3))
+    MAFWA_list[i,]$ListingStatus <- substr(MAFWA_list[i,]$ListingStatus,nchar(MAFWA_list[i,]$ListingStatus3) + 1, nchar(MAFWA_list[i,]$ListingStatus))
   }
 }
 
 # Now we want to grab what we need from the NatureServe rank data
-MAWFA_list$NSGlobalDescription <- MAWFA_list$NatureServe$conservationStatus$natureServeStatus$globalStatus$roundedRank$description
-MAWFA_list$NSGlobalReviewDate <- MAWFA_list$NatureServe$conservationStatus$natureServeStatus$globalStatus$statusLastReviewed
+MAFWA_list$NSGlobalDescription <- MAFWA_list$NatureServe$conservationStatus$natureServeStatus$globalStatus$roundedRank$description
+MAFWA_list$NSGlobalReviewDate <- MAFWA_list$NatureServe$conservationStatus$natureServeStatus$globalStatus$statusLastReviewed
 
 # Not grabbing the NS state ranks for now. Try and come back to that later.
-MAWFA_list$NatureServe <- NULL
+MAFWA_list$NatureServe <- NULL
 
 # Populating the taxonomic hierarchy from the Taxonomy information from Mongodb
-MAWFA_list$kingdom <- NA
-MAWFA_list$phylum <- NA
-MAWFA_list$class <- NA
-MAWFA_list$order <- NA
-MAWFA_list$family <- NA
-MAWFA_list$genus <- NA
-for (i in 1: nrow(MAWFA_list)) {
-  if (!is.null(MAWFA_list$Taxonomy[[i]])) {
-  taxonomy_row <- MAWFA_list[i,]$Taxonomy
+MAFWA_list$kingdom <- NA
+MAFWA_list$phylum <- NA
+MAFWA_list$class <- NA
+MAFWA_list$order <- NA
+MAFWA_list$family <- NA
+MAFWA_list$genus <- NA
+for (i in 1: nrow(MAFWA_list)) {
+  if (!is.null(MAFWA_list$Taxonomy[[i]])) {
+  taxonomy_row <- MAFWA_list[i,]$Taxonomy
   df <- ldply(taxonomy_row, data.frame)
-  if (is.na(MAWFA_list[i,]$kingdom)) {
-    MAWFA_list[i,]$kingdom <- df$name[which(df$rank == "Kingdom")]
-    MAWFA_list[i,]$phylum <- df$name[which(df$rank == "Phylum" | df$rank == "Division")]
+  if (is.na(MAFWA_list[i,]$kingdom)) {
+    MAFWA_list[i,]$kingdom <- df$name[which(df$rank == "Kingdom")]
+    MAFWA_list[i,]$phylum <- df$name[which(df$rank == "Phylum" | df$rank == "Division")]
     if (nrow(df[which(df$rank == "Class"),]) >0) { 
-      MAWFA_list[i,]$class <- df$name[which(df$rank == "Class")]
+      MAFWA_list[i,]$class <- df$name[which(df$rank == "Class")]
     } 
     if (nrow(df[which(df$rank == "Order"),]) >0) {
-      MAWFA_list[i,]$order <- df$name[which(df$rank == "Order")]
+      MAFWA_list[i,]$order <- df$name[which(df$rank == "Order")]
     } 
     if (nrow(df[which(df$rank == "Family"),]) >0) {
-      MAWFA_list[i,]$family <- df$name[which(df$rank == "Family")]
+      MAFWA_list[i,]$family <- df$name[which(df$rank == "Family")]
     } 
     if (nrow(df[which(df$rank == "Genus"),]) >0) {
-      MAWFA_list[i,]$genus <- df$name[which(df$rank == "Genus")]
+      MAFWA_list[i,]$genus <- df$name[which(df$rank == "Genus")]
     }
     }
   }
@@ -136,26 +136,26 @@ for (i in 1: nrow(MAWFA_list)) {
 # Grab taxonomic ranks so we can filter out any taxonomic identifications made at a level higher than species because they'll bring in too
 # many records from BISON and result in duplication
 
-MAWFA_list$rank <- NA
-for (i in 1:nrow(MAWFA_list)) {
-  if (is.na(MAWFA_list[i,]$rank)) {
-    if (!is.null(MAWFA_list[i,]$ITIS[[1]])){
-      itis <- as.data.frame(MAWFA_list[i,]$ITIS)
-      MAWFA_list[i,]$rank <- itis[which(itis$usage == "valid" | itis$usage == "accepted"),]$rank
+MAFWA_list$rank <- NA
+for (i in 1:nrow(MAFWA_list)) {
+  if (is.na(MAFWA_list[i,]$rank)) {
+    if (!is.null(MAFWA_list[i,]$ITIS[[1]])){
+      itis <- as.data.frame(MAFWA_list[i,]$ITIS)
+      MAFWA_list[i,]$rank <- itis[which(itis$usage == "valid" | itis$usage == "accepted"),]$rank
     }
   }
 }
 
-for (i in 1:nrow(MAWFA_list)){
-  if (is.na(MAWFA_list[i,]$rank)){
-    if(!is.null(MAWFA_list[i,]$WoRMS[[1]])){
-      worms <- as.data.frame(MAWFA_list[i,]$WoRMS)
+for (i in 1:nrow(MAFWA_list)){
+  if (is.na(MAFWA_list[i,]$rank)){
+    if(!is.null(MAFWA_list[i,]$WoRMS[[1]])){
+      worms <- as.data.frame(MAFWA_list[i,]$WoRMS)
       if (!is.null(worms$rank)){
         if (!is.na(worms[1,]$rank) | !is.na(worms[2,]$rank)) {
           if (any(worms$status == "accepted")){
-            MAWFA_list[i,]$rank <- worms[which(worms$status == "accepted" ),]$rank
+            MAFWA_list[i,]$rank <- worms[which(worms$status == "accepted" ),]$rank
           } else if(worms$status == "uncertain" | worms$status == "nomen dubium" & worms$status != "accepted") {
-            MAWFA_list[i,]$rank <- worms$status
+            MAFWA_list[i,]$rank <- worms$status
           }
         }
       }
@@ -164,38 +164,38 @@ for (i in 1:nrow(MAWFA_list)){
 }
 
 
-MAWFA_list_speciesonly <- MAWFA_list[which(MAWFA_list$rank != "Family" & MAWFA_list$rank != "Genus" & MAWFA_list$rank != "Order" & MAWFA_list$rank != "Subclass" & MAWFA_list$rank != "Suborder"),]
-MAWFA_list_speciesonly$ITIS <- NULL
-MAWFA_list_speciesonly$WoRMS <- NULL
+MAFWA_list_speciesonly <- MAFWA_list[which(MAFWA_list$rank != "Family" & MAFWA_list$rank != "Genus" & MAFWA_list$rank != "Order" & MAFWA_list$rank != "Subclass" & MAFWA_list$rank != "Suborder"),]
+MAFWA_list_speciesonly$ITIS <- NULL
+MAFWA_list_speciesonly$WoRMS <- NULL
 
 
 # Need to unload the package "plyr" here because it causes problems for summarizing the data below
 detach(package:plyr)
 
 ### See what BISON has for these species
-MAWFA_list_speciesonly$bisonQuery <- NA
-for(i in 1:nrow(MAWFA_list_speciesonly)){
-  if (is.na(MAWFA_list_speciesonly[i,]$bisonQuery)){
-      MAWFA_list_speciesonly[i,]$bisonQuery <- paste0("https://data.usgs.gov/solr/occurrences/select?q=scientificName:(%22", (URLencode(MAWFA_list_speciesonly[i,]$ScientificName)))
+MAFWA_list_speciesonly$bisonQuery <- NA
+for(i in 1:nrow(MAFWA_list_speciesonly)){
+  if (is.na(MAFWA_list_speciesonly[i,]$bisonQuery)){
+      MAFWA_list_speciesonly[i,]$bisonQuery <- paste0("https://data.usgs.gov/solr/occurrences/select?q=scientificName:(%22", (URLencode(MAFWA_list_speciesonly[i,]$ScientificName)))
     }
   }
-MAWFA_list_speciesonly$bisonQuery <- paste0(MAWFA_list_speciesonly$bisonQuery, "%22)&facet.mincount=1&rows=0&facet=true&facet.missing=true&facet.limit=-1&wt=json&indent=true&facet.field=basisOfRecord")
+MAFWA_list_speciesonly$bisonQuery <- paste0(MAFWA_list_speciesonly$bisonQuery, "%22)&facet.mincount=1&rows=0&facet=true&facet.missing=true&facet.limit=-1&wt=json&indent=true&facet.field=basisOfRecord")
 
-MAWFA_list_speciesonly$bisontotal <- NA
-for(i in 1:nrow(MAWFA_list_speciesonly)){
-  if (is.na(MAWFA_list_speciesonly[i,]$bisontotal)){
-    bisonrow <- fromJSON(MAWFA_list_speciesonly[i,]$bisonQuery)
-    MAWFA_list_speciesonly[i,]$bisontotal <- bisonrow$response$numFound
+MAFWA_list_speciesonly$bisontotal <- NA
+for(i in 1:nrow(MAFWA_list_speciesonly)){
+  if (is.na(MAFWA_list_speciesonly[i,]$bisontotal)){
+    bisonrow <- fromJSON(MAFWA_list_speciesonly[i,]$bisonQuery)
+    MAFWA_list_speciesonly[i,]$bisontotal <- bisonrow$response$numFound
   }
 }
 
-N <- nrow(MAWFA_list_speciesonly)
+N <- nrow(MAFWA_list_speciesonly)
 bisondata <- vector(mode="list", length=N)
 
 df <- data.frame(X_id=NA, bisonQuery=NA, total=NA, literature=NA, fossil=NA, observation = NA, specimen=NA, unknown=NA )
 df_total <- data.frame(X_id=NA, bisonQuery=NA, total=NA, literature=NA, fossil=NA, observation = NA, specimen=NA, unknown=NA )
 for(i in 1:N){
-  query  <- toString(MAWFA_list_speciesonly$bisonQuery[i])
+  query  <- toString(MAFWA_list_speciesonly$bisonQuery[i])
   bisondata[[i]] <- fromJSON(query)
   xid = bisondata[[i]]$responseHeader$params$q
   bisondata[[i]] <- bisondata[[i]]$facet_counts$facet_fields$basisOfRecord
@@ -225,20 +225,20 @@ df_total <- df_total[-1, ]  # first row is NA's
 df_total$total <- NULL
 
 # Merge df with original data
-MAWFA_list_speciesonly <- merge(MAWFA_list_speciesonly, df_total, by = "bisonQuery", all.x = T)
-MAWFA_list_speciesonly[,26:30] <- lapply(MAWFA_list_speciesonly[,26:30], function(x) as.numeric(x))
+MAFWA_list_speciesonly <- merge(MAFWA_list_speciesonly, df_total, by = "bisonQuery", all.x = T)
+MAFWA_list_speciesonly[,26:30] <- lapply(MAFWA_list_speciesonly[,26:30], function(x) as.numeric(x))
 
 # Now that we have the data for each SGCN species as the type of data (basis of record), let's figure out how many records are available in each
 # state for each species listed
-MAWFA_list_speciesonly$bisonStateQuery <- NA
-for(i in 1:nrow(MAWFA_list_speciesonly)){
-  if (is.na(MAWFA_list_speciesonly[i,]$bisonStateQuery)){
-    MAWFA_list_speciesonly[i,]$bisonStateQuery <- paste0("https://data.usgs.gov/solr/occurrences/select?q=scientificName:(%22", (URLencode(MAWFA_list_speciesonly[i,]$ScientificName)))
+MAFWA_list_speciesonly$bisonStateQuery <- NA
+for(i in 1:nrow(MAFWA_list_speciesonly)){
+  if (is.na(MAFWA_list_speciesonly[i,]$bisonStateQuery)){
+    MAFWA_list_speciesonly[i,]$bisonStateQuery <- paste0("https://data.usgs.gov/solr/occurrences/select?q=scientificName:(%22", (URLencode(MAFWA_list_speciesonly[i,]$ScientificName)))
   }
 }
-MAWFA_list_speciesonly$bisonStateQuery <- paste0(MAWFA_list_speciesonly$bisonStateQuery, "%22)%20AND%20calculatedState:(%22Illinois%22%20%22Indiana%22%20%22Iowa%22%20%22Kansas%22%20%22Kentucky%22%20%22Michigan%22%20%22Missouri%22%20%22Minnesota%22%20%22Nebraska%22%20%22North%20Dakota%22%20%22Ohio%22%20%22South%20Dakota%22%20%22Wisconsin%22)&facet.mincount=1&rows=0&facet=true&facet.missing=true&facet.limit=-1&wt=json&indent=true&facet.field=calculatedState")
+MAFWA_list_speciesonly$bisonStateQuery <- paste0(MAFWA_list_speciesonly$bisonStateQuery, "%22)%20AND%20calculatedState:(%22Illinois%22%20%22Indiana%22%20%22Iowa%22%20%22Kansas%22%20%22Kentucky%22%20%22Michigan%22%20%22Missouri%22%20%22Minnesota%22%20%22Nebraska%22%20%22North%20Dakota%22%20%22Ohio%22%20%22South%20Dakota%22%20%22Wisconsin%22)&facet.mincount=1&rows=0&facet=true&facet.missing=true&facet.limit=-1&wt=json&indent=true&facet.field=calculatedState")
 
-N <- nrow(MAWFA_list_speciesonly)
+N <- nrow(MAFWA_list_speciesonly)
 bisonStatedata <- vector(mode="list", length=N)
 
 df <- data.frame(X_id=NA, bisonStateQuery=NA, Illinois=NA, Indiana=NA, Iowa=NA, Kansas=NA, Kentucky=NA, Michigan=NA, Missouri=NA, Minnesota=NA, Nebraska=NA, Ohio=NA, Wisconsin=NA )
@@ -248,7 +248,7 @@ df_total <- data.frame(X_id=NA, bisonStateQuery=NA, Illinois=NA, Indiana=NA, Iow
 df_total$`South Dakota` <- NA
 df_total$`North Dakota` <- NA
 for(i in 1:N){
-  query  <- toString(MAWFA_list_speciesonly$bisonStateQuery[i])
+  query  <- toString(MAFWA_list_speciesonly$bisonStateQuery[i])
   bisondata[[i]] <- fromJSON(query)
   xid = bisondata[[i]]$responseHeader$params$q
   bisondata[[i]] <- bisondata[[i]]$facet_counts$facet_fields$calculatedState
@@ -277,12 +277,12 @@ for(i in 1:N){
 df_total <- df_total[-1, ]  # first row is NA's
 
 # Merge df with original data
-MAWFA_list_speciesonly <- merge(MAWFA_list_speciesonly, df_total, by = "bisonStateQuery", all.x = T)
-MAWFA_list_speciesonly[,33:45] <- lapply(MAWFA_list_speciesonly[,33:45], function(x) as.numeric(x))
+MAFWA_list_speciesonly <- merge(MAFWA_list_speciesonly, df_total, by = "bisonStateQuery", all.x = T)
+MAFWA_list_speciesonly[,33:45] <- lapply(MAFWA_list_speciesonly[,33:45], function(x) as.numeric(x))
 
 # Group by class
 
-r1 <- MAWFA_list_speciesonly %>%
+r1 <- MAFWA_list_speciesonly %>%
   group_by(class) %>%
   summarize(Total = sum(bisontotal), Illinois = sum(Illinois, na.rm = T), Indiana = sum(Indiana, na.rm = T), Iowa = sum(Iowa, na.rm = T), 
             Kansas = sum(Kansas, na.rm = T), Kentucky = sum(Kentucky, na.rm = T), Michigan = sum(Michigan, na.rm = T), 
@@ -308,7 +308,7 @@ r1 <- r1[,-16] #Removes "Count" column
 # r_log$logTotal <- log10(r_log$FWSRegionTotal)
 # r_log <- r_log[order(r_log$logTotal),]
 
-ls_r1 <- MAWFA_list %>%
+ls_r1 <- MAFWA_list %>%
   group_by(class, ListingStatus) %>%
   summarize(count = n())
 ls_r1 <- ls_r1[which(!is.na(ls_r1$ListingStatus)),]
@@ -316,13 +316,13 @@ ls_r1 <- ls_r1[which(ls_r1$ListingStatus == "Candidate" | ls_r1$ListingStatus ==
                        ls_r1$ListingStatus == "Threatened" | 
                        ls_r1$ListingStatus == "Under Review in the Candidate or Petition Process"),]
 
-ListingStatus2 <- MAWFA_list[which(!is.na(FWSRegion1_list$ListingStatus2)),]
+ListingStatus2 <- MAFWA_list[which(!is.na(FWSRegion1_list$ListingStatus2)),]
 
-EndangeredList <- MAWFA_list[which(FWSRegion1_list$ListingStatus == "Endangered"),]
+EndangeredList <- MAFWA_list[which(FWSRegion1_list$ListingStatus == "Endangered"),]
 
 # What can we say about the distribution of observation types at the class level?
 
-o1 <- MAWFA_list_speciesonly %>%
+o1 <- MAFWA_list_speciesonly %>%
   group_by(class) %>%
   summarise(Count = n(), Literature = sum(literature, na.rm = T), Observation = sum(observation, na.rm = T), 
             Specimen = sum(specimen, na.rm = T), Fossil = sum(fossil, na.rm = T), Unknown = sum(unknown, na.rm = T))
